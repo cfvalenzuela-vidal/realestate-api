@@ -16,7 +16,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm' # Habilita caché automático para npm
+          cache: 'npm' # Habilitar caché automático para npm
 
       - name: Cache dependencies
         uses: actions/cache@v3
