@@ -1,37 +1,40 @@
-name: API CI - RealEstate
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+name: CI - RealEstate API
+on: [push, pull_request]
+
 jobs:
   test:
-    name: Test API en Node.js ${{ matrix.node }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [16.x, 18.x]
+        node-version: [18.x, 20.x]
+    
     steps:
-      - name: Checkout del código
-        uses: actions/checkout@v3
-      - name: Configurar Node.js
-        uses: actions/setup-node@v3
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
-      - name: Cachear dependencias npm
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm' # Habilita caché automático para npm
+
+      - name: Cache dependencies
         uses: actions/cache@v3
+        id: cache-deps
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          path: |
+            ~/.npm
+            node_modules
+            **/node_modules
+          key: ${{ runner.os }}-node-${{ matrix.node-version }}-deps-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-
-      - name: Instalar dependencias
+            ${{ runner.os }}-node-${{ matrix.node-version }}-deps-
+            ${{ runner.os }}-node-deps-
+
+      - name: Install dependencies
         run: npm ci
-      - name: Ejecutar pruebas con Jest
+        env:
+          CI: true
+
+      - name: Run tests
         run: npm test
-      - name: Reportar éxito
-        if: success()
-        run: echo " API funcional en Node ${{ matrix.node }}"
-      - name: Reportar error
-        if: failure()
-        run: echo " Falla detectada en los tests para Node ${{ matrix.node }}"
