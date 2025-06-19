@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-          cache: 'npm'  # Habilita caché automático de npm (opcional pero recomendado)
+          cache: 'npm'  # Habilitar caché automático de npm (opcional pero recomendado)
 
       - name: Cachear node_modules y npm
         uses: actions/cache@v3
