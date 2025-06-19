@@ -10,28 +10,40 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [16.x, 18.x]
+        node: [18.x, 20.x]  # Versiones recomendadas (Node 16 ya no tiene soporte)
     steps:
       - name: Checkout del código
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
       - name: Configurar Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-      - name: Cachear dependencias npm
+          cache: 'npm'  # Habilita caché automático de npm (opcional, pero recomendado)
+
+      - name: Cachear node_modules y npm
         uses: actions/cache@v3
+        id: cache-modules
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          path: |
+            ~/.npm
+            node_modules
+            **/node_modules
+          key: ${{ runner.os }}-node-${{ matrix.node }}-modules-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-
+            ${{ runner.os }}-node-${{ matrix.node }}-modules-
+            ${{ runner.os }}-node-modules-
+
       - name: Instalar dependencias
         run: npm ci
+
       - name: Ejecutar pruebas con Jest
         run: npm test
+
       - name: Reportar éxito
         if: success()
-        run: echo " API funcional en Node ${{ matrix.node }}"
+        run: echo "API funcional en Node ${{ matrix.node }}"
+
       - name: Reportar error
         if: failure()
-        run: echo " Falla detectada en los tests para Node ${{ matrix.node }}"
+        run: echo "Falla detectada en los tests para Node ${{ matrix.node }}"
